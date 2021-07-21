@@ -545,6 +545,9 @@ public class JNAerator {
                             arch = a.getEnumParam(0, NativePlatform.class);
                             libraryFileForCurrentArch = null;
                             break;
+                        case StructAlign:
+                            config.structAlignment = a.getEnumParam(0, JNAeratorConfig.StructAlignment.class);
+                            break;
 
                     }
                     return Collections.emptyList();

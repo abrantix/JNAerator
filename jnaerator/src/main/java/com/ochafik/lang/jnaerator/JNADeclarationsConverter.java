@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import com.sun.jna.Structure;
 import org.rococoa.AlreadyRetained;
 import org.rococoa.cocoa.foundation.NSObject;
 
@@ -800,17 +801,30 @@ public class JNADeclarationsConverter extends DeclarationsConverter {
         return name.toString().equals(com.sun.jna.Pointer.class.getName());
     }
     @SuppressWarnings("unchecked")
+    private void addStructAlignmentArg(FunctionCall fcall)
+    {
+        if(result.config.structAlignment != JNAeratorConfig.StructAlignment.ALIGN_DEFAULT) {
+            fcall.addArgument(staticField(com.sun.jna.Structure.class, result.config.structAlignment.name()));
+        }
+    }
+
     private void addStructConstructors(Identifier structName, Struct structJavaClass/*, Struct byRef,
              Struct byVal*/, Struct nativeStruct) throws IOException {
+
+        boolean isUnion = nativeStruct.getType() == Struct.Type.CUnion;
+        boolean isStructure = nativeStruct.getType() == Struct.Type.CStruct;
 
         List<Declaration> initialMembers = new ArrayList<Declaration>(structJavaClass.getDeclarations());
         Set<String> signatures = new TreeSet<String>();
 
         Function emptyConstructor = new Function(Function.Type.JavaMethod, structName.clone(), null).addModifiers(ModifierType.Public);
-        emptyConstructor.setBody(block(stat(methodCall("super"))));
+        FunctionCall emptySuperCall = methodCall("super");
+        if(isStructure) {
+            addStructAlignmentArg(emptySuperCall);
+        }
+        emptyConstructor.setBody(block(stat(emptySuperCall)));
         addConstructor(structJavaClass, emptyConstructor);
 
-        boolean isUnion = nativeStruct.getType() == Struct.Type.CUnion;
         boolean addPointerConstructor = true;
         if (isUnion) {
             Map<String, Pair<TypeRef, List<Pair<String, String>>>> fieldsAndCommentsByTypeStr = new LinkedHashMap<String, Pair<TypeRef, List<Pair<String, String>>>>();
@@ -904,6 +918,9 @@ public class JNADeclarationsConverter extends DeclarationsConverter {
                 superCall.addArgument(varRef(uname));
                 //orderedFieldNames.add(expr(name));
             }
+            if(isStructure) {
+                addStructAlignmentArg(superCall);
+            }
             fieldsConstr.getBody().addStatement(stat(superCall));
 
             // Adding class' own fields
@@ -972,6 +989,9 @@ public class JNADeclarationsConverter extends DeclarationsConverter {
 	        addressConstructor.addArg(new Arg(pointerVarName, typeRef(com.sun.jna.Pointer.class)));
 	        FunctionCall superPointerCall = methodCall("super");
 	        superPointerCall.addArgument(varRef(pointerVarName));
+            if(isStructure) {
+                addStructAlignmentArg(superPointerCall);
+            }
 	        addressConstructor.setBody(block(stat(superPointerCall)));
 	        addConstructor(structJavaClass, addressConstructor);
 

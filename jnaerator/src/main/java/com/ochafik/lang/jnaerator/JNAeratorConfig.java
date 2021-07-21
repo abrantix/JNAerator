@@ -20,6 +20,7 @@ package com.ochafik.lang.jnaerator;
 
 import com.ochafik.io.ReadText;
 import com.ochafik.lang.jnaerator.JNAeratorCommandLineArgs.OptionDef;
+import com.sun.jna.Structure;
 import org.bridj.cpp.com.IID;
 import java.io.File;
 import java.io.FileFilter;
@@ -73,6 +74,23 @@ public class JNAeratorConfig {
     public enum Platform {
 
         Windows, Linux, MacOSX
+    }
+
+    public enum StructAlignment {
+        ALIGN_DEFAULT(Structure.ALIGN_DEFAULT),
+        ALIGN_NONE(Structure.ALIGN_NONE),
+        ALIGN_GNUC(Structure.ALIGN_GNUC),
+        ALIGN_MSVC(Structure.ALIGN_MSVC);
+
+        private int value;
+
+        private StructAlignment(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
     }
 
     public enum Runtime {
@@ -637,6 +655,7 @@ public class JNAeratorConfig {
     public List<Pair<OptionDef, List<String>>> parsedArgs;
     public boolean skipLibraryInstanceDeclarations;
     public String callbackInvokeMethodName = "apply";
+    public StructAlignment structAlignment = StructAlignment.ALIGN_DEFAULT;
 
     public Collection<File> getFiles() {
         /*return new AdaptedCollection<String, File>(libraryByFile.keySet(), new Adapter<String, File>() {

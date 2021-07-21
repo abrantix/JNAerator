@@ -299,7 +299,8 @@ public class JNAeratorCommandLineArgs {
         MaxConstructedFields(
         "-maxConstrFields", "Maximum number of fields allowed for structure fields constructors. If a struct has more fields, it will only get a default constructor.", new ArgDef(Type.Int, "fieldCount")),
         GenPrivateMembers("-genPrivateMembers", "Generate wrappers for private fields and methods (will be protected and deprecated)."),
-        CPlusPlusGen("-genCPlusPlus", "[Experimental, Not working at all] Generate C++ classes.");
+        CPlusPlusGen("-genCPlusPlus", "[Experimental, Not working at all] Generate C++ classes."),
+        StructAlign("-structAlign", "Structure alignment", new ArgDef(Type.Enum, "structAlign", JNAeratorConfig.StructAlignment.class));
 
         static String[] strs(String... strs) {
             return strs;
